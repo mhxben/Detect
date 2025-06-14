@@ -18,6 +18,8 @@ class PackageSimulationViewModel(
     private val _panneState = mutableStateOf<PanneState?>(null)
     val panneState: State<PanneState?> = _panneState
 
+    private var simulationStopped = false
+
     init {
         startSimulation()
     }
@@ -27,9 +29,11 @@ class PackageSimulationViewModel(
             while (true) {
                 delay(10000)
 
-                val humidity = if (Random.nextInt(100) < 20) -1.0 else Random.nextDouble(20.0, 90.0)
-                val temperature = if (Random.nextInt(100) < 20) -1.0 else Random.nextDouble(10.0, 60.0)
-                val vibration = if (Random.nextInt(100) < 20) -1.0 else Random.nextDouble(0.0, 1.0)
+                if (simulationStopped) continue
+
+                val humidity = Random.nextDouble(20.0, 90.0)
+                val temperature = Random.nextDouble(10.0, 60.0)
+                val vibration = Random.nextDouble(0.0, 1.0)
 
                 val predetect = PannePredetect(
                     humidity = humidity,
@@ -43,5 +47,15 @@ class PackageSimulationViewModel(
                 }
             }
         }
+    }
+
+    fun resolveIssue() {
+        simulationStopped = true
+        _panneState.value = null
+    }
+
+    fun hasIssue(): Boolean {
+        val panne = _panneState.value
+        return panne?.humidity == 1 || panne?.temperature == 1 || panne?.vibration == 1
     }
 }
